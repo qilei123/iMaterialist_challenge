@@ -28,10 +28,10 @@ set -e
 PRETRAINED_CHECKPOINT_DIR=/data0/qilei_chen/iMaterialist_Challenge/checkpoints
 
 # Where the training (fine-tuned) checkpoint and logs will be saved to.
-TRAIN_DIR=/data0/qilei_chen/iMaterialist_Challenge/inception_v3_1
+TRAIN_DIR=/data0/qilei_chen/iMaterialist_Challenge/inception_v3
 
 # Where the dataset is saved to.
-DATASET_DIR=/data0/qilei_chen/iMaterialist_Challenge/tfrecords
+DATASET_DIR=/data0/qilei_chen/iMaterialist_Challenge
 
 # Download the pre-trained checkpoint.
 if [ ! -d "$PRETRAINED_CHECKPOINT_DIR" ]; then
@@ -49,57 +49,12 @@ python download_and_convert_data.py \
   --dataset_name=iMaterialist \
   --dataset_dir=${DATASET_DIR}
 
-# Fine-tune only the new layers for 50000 steps.
-python train_image_classifier.py \
-  --train_dir=${TRAIN_DIR} \
-  --dataset_name=iMaterialist \
-  --dataset_split_name=train \
-  --dataset_dir=${DATASET_DIR} \
-  --model_name=inception_v3 \
-  --checkpoint_path=${PRETRAINED_CHECKPOINT_DIR}/inception_v3.ckpt \
-  --checkpoint_exclude_scopes=InceptionV3/Logits,InceptionV3/AuxLogits \
-  --trainable_scopes=InceptionV3/Logits,InceptionV3/AuxLogits \
-  --max_number_of_steps=50000 \
-  --batch_size=16 \
-  --learning_rate=0.01 \
-  --learning_rate_decay_type=fixed \
-  --save_interval_secs=60 \
-  --save_summaries_secs=60 \
-  --log_every_n_steps=100 \
-  --optimizer=rmsprop \
-  --weight_decay=0.00004
 
-# Run evaluation.
-#python eval_image_classifier.py \
-#  --checkpoint_path=${TRAIN_DIR} \
-#  --eval_dir=${TRAIN_DIR} \
-#  --dataset_name=iMaterialist \
-#  --dataset_split_name=validation \
-#  --dataset_dir=${DATASET_DIR} \
-#  --model_name=inception_v3
-
-# Fine-tune all the new layers for 50000 steps.
-python train_image_classifier.py \
-  --train_dir=${TRAIN_DIR}/all1 \
-  --dataset_name=iMaterialist \
-  --dataset_split_name=train \
-  --dataset_dir=${DATASET_DIR} \
-  --model_name=inception_v3 \
-  --checkpoint_path=${TRAIN_DIR} \
-  --max_number_of_steps=150000 \
-  --batch_size=16 \
-  --learning_rate=0.0001 \
-  --learning_rate_decay_type=fixed \
-  --save_interval_secs=60 \
-  --save_summaries_secs=60 \
-  --log_every_n_steps=10 \
-  --optimizer=rmsprop \
-  --weight_decay=0.00004
 
 # Run evaluation.
 python eval_image_classifier.py \
-  --checkpoint_path=${TRAIN_DIR}/all1 \
-  --eval_dir=${TRAIN_DIR}/all1 \
+  --checkpoint_path=${TRAIN_DIR}/all \
+  --eval_dir=${TRAIN_DIR}/all \
   --dataset_name=iMaterialist \
   --dataset_split_name=validation \
   --dataset_dir=${DATASET_DIR} \
