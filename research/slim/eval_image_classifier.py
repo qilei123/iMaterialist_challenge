@@ -85,7 +85,13 @@ FLAGS = tf.app.flags.FLAGS
 def main(_):
   if not FLAGS.dataset_dir:
     raise ValueError('You must supply the dataset directory with --dataset_dir')
-
+  config = tf.ConfigProto()
+  config.gpu_options.allow_growth = True
+  session = tf.Session(config=config)
+  
+  #tf.device('/device:GPU:1')
+  #tf.Session(config=tf.ConfigProto(log_device_placement=True))
+  
   tf.logging.set_verbosity(tf.logging.INFO)
   with tf.Graph().as_default():
     tf_global_step = slim.get_or_create_global_step()

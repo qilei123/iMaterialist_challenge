@@ -24,7 +24,11 @@ from datasets import dataset_factory
 from deployment import model_deploy
 from nets import nets_factory
 from preprocessing import preprocessing_factory
-
+'''
+tf.device('/device:GPU:1')
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+'''
 slim = tf.contrib.slim
 
 tf.app.flags.DEFINE_string(
@@ -380,6 +384,7 @@ def _get_variables_to_train():
 
 
 def main(_):
+  tf.device('/device:GPU:1')
   if not FLAGS.dataset_dir:
     raise ValueError('You must supply the dataset directory with --dataset_dir')
 
@@ -397,11 +402,15 @@ def main(_):
 
     # Create global_step
     with tf.device(deploy_config.variables_device()):
+      print('variables_device:'+deploy_config.variables_device())
       global_step = slim.create_global_step()
 
     ######################
     # Select the dataset #
     ######################
+    print(FLAGS.dataset_name)
+    print(FLAGS.dataset_split_name)
+    print(FLAGS.dataset_dir)
     dataset = dataset_factory.get_dataset(
         FLAGS.dataset_name, FLAGS.dataset_split_name, FLAGS.dataset_dir)
 
@@ -426,6 +435,7 @@ def main(_):
     # Create a dataset provider that loads data from the dataset #
     ##############################################################
     with tf.device(deploy_config.inputs_device()):
+      print('inputs_device:'+deploy_config.inputs_device())
       provider = slim.dataset_data_provider.DatasetDataProvider(
           dataset,
           num_readers=FLAGS.num_readers,
@@ -507,6 +517,7 @@ def main(_):
     # Configure the optimization procedure. #
     #########################################
     with tf.device(deploy_config.optimizer_device()):
+      print('optimizer_device:'+deploy_config.optimizer_device())
       learning_rate = _configure_learning_rate(dataset.num_samples, global_step)
       optimizer = _configure_optimizer(learning_rate)
       summaries.add(tf.summary.scalar('learning_rate', learning_rate))
@@ -552,7 +563,14 @@ def main(_):
     # Merge all summaries together.
     summary_op = tf.summary.merge(list(summaries), name='summary_op')
 
-
+    #tf.device('/device:GPU:1')
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    session = tf.Session(config=config)
+    
+    
+    #tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    
     ###########################
     # Kicks off the training. #
     ###########################
@@ -568,7 +586,7 @@ def main(_):
         save_summaries_secs=FLAGS.save_summaries_secs,
         save_interval_secs=FLAGS.save_interval_secs,
         sync_optimizer=optimizer if FLAGS.sync_replicas else None)
-
+    tf.device('/device:GPU:1')
 
 if __name__ == '__main__':
   tf.app.run()
