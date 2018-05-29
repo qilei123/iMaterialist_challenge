@@ -37,7 +37,7 @@ _NUM_CLASSES = 128
 
 _ITEMS_TO_DESCRIPTIONS = {
     'image': 'A color image of varying size.',
-    'label': 'A single integer between 0 and 4',
+    'label': 'A single integer between 0 and 127',
 }
 
 
